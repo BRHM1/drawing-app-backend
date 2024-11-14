@@ -8,7 +8,7 @@ const { Server } = require('socket.io');
 
 const io = new Server(expressServer, {
     cors: {
-        origin: [process.env.APP_URL, process.env.ADMIN_URL],
+        origin: ["https://dddraw.vercel.app/", "https://admin.socket.io"],
         methods: ["GET", "POST"],
         credentials: true
     }
