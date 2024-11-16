@@ -2,17 +2,27 @@ const { instrument } = require('@socket.io/admin-ui');
 const express = require('express');
 const app = express();
 require('dotenv').config()
+const cors = require('cors')
 
-const expressServer = app.listen(3000)
+const PORT = process.env.PORT || 3000
+const expressServer = app.listen(PORT)
 const { Server } = require('socket.io');
 
 const io = new Server(expressServer, {
     cors: {
-        origin: ["https://dddraw.vercel.app/", "https://admin.socket.io"],
+        origin: ["https://dddraw.vercel.app/", "https://admin.socket.io", "https://draw.brhm.me"],
         methods: ["GET", "POST"],
         credentials: true
     }
 })
+
+app.use(cors(
+    {
+        origin: ["https://dddraw.vercel.app/", "https://admin.socket.io", "https://draw.brhm.me"],
+        methods: ["GET", "POST"],
+        credentials: true
+    }
+))
 
 const rooms = {}
 
