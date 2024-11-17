@@ -40,23 +40,28 @@ io.on('connection', socket => {
     })
     // send drawing data to all clients in the same room
     socket.on('send-draw', (roomID, data) => {
+        if(!rooms[roomID] || !data) return
         socket.to(roomID).emit('receive-draw', data)
     })
 
     socket.on('delete-element', (roomID, id) => {
+        if(!rooms[roomID] || !id) return
         socket.to(roomID).emit('handle-delete', id)
     }
     )
 
     socket.on('send-cursor', (roomID, data, sender) => {
+        if(!rooms[roomID] || !data) return
         socket.to(roomID).emit('receive-cursor', data, sender)
     })
 
     socket.on('lock-element', (id, roomID) => {
+        if(!rooms[roomID] || !id) return
         socket.to(roomID).emit('update-locked-elements', id, true)
     })
 
     socket.on('unlock-element', (id, roomID) => {
+        if(!rooms[roomID] || !id) return
         socket.to(roomID).emit('update-locked-elements', id, false)
     })
 
