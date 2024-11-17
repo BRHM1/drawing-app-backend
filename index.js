@@ -10,7 +10,7 @@ const { Server } = require('socket.io');
 
 const io = new Server(expressServer, {
     cors: {
-        origin: ["https://dddraw.vercel.app/", "https://admin.socket.io", "https://draw.brhm.me"],
+        origin: ["https://dddraw.vercel.app/", "https://admin.socket.io", "https://draw.brhm.me" , "http://localhost:5173"],
         methods: ["GET", "POST"],
         credentials: true
     }
@@ -18,13 +18,13 @@ const io = new Server(expressServer, {
 
 app.use(cors(
     {
-        origin: ["https://dddraw.vercel.app/", "https://admin.socket.io", "https://draw.brhm.me"],
+        origin: ["https://dddraw.vercel.app/", "https://admin.socket.io", "https://draw.brhm.me", "http://localhost:5173"],
         methods: ["GET", "POST"],
         credentials: true
     }
 ))
 
-const rooms = {}
+const rooms = {}  // {roomID: {socketID: username}}
 
 io.on('connection', socket => {
     socket.on('join-room', (roomID, username) => {
@@ -37,12 +37,9 @@ io.on('connection', socket => {
         socket.to(roomID).emit('all-users', rooms[roomID])
         // send the recently joined user the list of all users in the room
         socket.emit('all-users', rooms[roomID])
-
-        console.log("User " + socket.id + " joined room " + roomID)
     })
     // send drawing data to all clients in the same room
     socket.on('send-draw', (roomID, data) => {
-        console.log(roomID)
         socket.to(roomID).emit('receive-draw', data)
     })
 
@@ -61,6 +58,24 @@ io.on('connection', socket => {
 
     socket.on('unlock-element', (id, roomID) => {
         socket.to(roomID).emit('update-locked-elements', id, false)
+    })
+
+    socket.on('leave-room', (roomID) => {
+        socket.leave(roomID)
+        if (rooms[roomID] !== undefined) {
+            delete rooms[roomID][socket.id]
+            socket.to(roomID).emit('all-users', rooms[roomID])
+        }
+    })
+
+    socket.on('disconnect', () => {
+        for (const roomID in rooms) {
+            if (rooms[roomID][socket.id] !== undefined) {
+                delete rooms[roomID][socket.id]
+                socket.to(roomID).emit('all-users', rooms[roomID])
+            }
+        }
+        socket.disconnect()
     })
 });
 
